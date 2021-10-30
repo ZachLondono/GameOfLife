@@ -14,16 +14,16 @@ Pattern Options:
 ```
 
 
-#Examples:
+## Examples:
 
-##Bee Hive Pattern
+### Bee Hive Pattern
 ```
 [ ][X][X][ ]
 [X][ ][ ][X]
 [ ][X][X][ ]
 ```
 
-##Blinker Pattern:
+### Blinker Pattern:
 ```
 [ ][ ][ ]    	[ ][x][ ]
 [X][X][X]  =>	[ ][X][ ] 
