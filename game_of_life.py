@@ -17,16 +17,17 @@ class GameOfLife:
 				cell = Cell(x,y)
 				self.positions[(x,y)] = cell
 
-	def play(self, duration : float):
+	def play(self, tickPerSec : float) -> None:
+		sleepDuration = 1/tickPerSec
 		self.clear()
 		self.draw()
-		time.sleep(duration)
+		time.sleep(sleepDuration)
 		while not self.isExtinct():
 			self.clear()
 			self.draw()
 			self.clear()
 			self.step()
-			time.sleep(duration)
+			time.sleep(sleepDuration)
 
 
 	def isExtinct(self) -> bool :
@@ -34,25 +35,25 @@ class GameOfLife:
 			if value.isAlive: return False
 		return True
 
-	def randomizeCells(self, chance : float):
+	def randomizeCells(self, chance : float) -> None:
 		for key in self.positions:
 			if random.randint(1, 100) > (1 - chance) * 100:
 				self.positions[key].setAlive(True)
 			else: self.positions[key].setAlive(False)
 
-	def setBeePattern(self):
+	def setBeePattern(self) -> None:
 		for key in self.positions:
 			if key == (1,0) or key == (0,1) or key == (0,2) or key == (2,1) or key == (2,2) or key == (1,3):
 				self.positions[key].isAlive = True
 			else: self.positions[key].isAlive = False
 
-	def setBlinkerPattern(self):
+	def setBlinkerPattern(self) -> None:
 		for key in self.positions:
 			if key == (1,0) or key == (1,1) or key == (1,2):
 				self.positions[key].isAlive = True
 			else: self.positions[key].isAlive = False
 
-	def setPulsarPattern(self):
+	def setPulsarPattern(self) -> None:
 		for key in self.positions:
 			if key == (4,2) or key == (5,2) or key == (6,2) \
 				or key == (2,4) or key == (2,5) or key == (2,6) \
@@ -74,22 +75,25 @@ class GameOfLife:
 				self.positions[key].isAlive = True
 			else: self.positions[key].isAlive = False
 	
-	def setGliderPattern(self):
+	def setGliderPattern(self) -> None:
 		for key in self.positions:
 			if key == (1,0) or key == (2,1) or key == (2,2) or key == (1,2) or key == (0,2):
 				self.positions[key].isAlive = True
 			else: self.positions[key].isAlive = False
 
-	def draw(self):
+	def draw(self) -> None:
 		string = ""
+		string += " " + ("_" * self.size * 2) + "\n"
 		for x in range(self.size):
+			string += "|"
 			for y in range(self.size):
 				cell = self.positions[(x, y)]
 				string += cell.toString()
-			string += '\n'
+			string += '|\n'
+		string += " " + ("-" * self.size * 2) + "\n"
 		print(string, end="")
 
-	def step(self):
+	def step(self) -> None:
 		nextStep = {}
 		for key in self.positions:
 			cell = self.positions[key]
@@ -114,8 +118,41 @@ class GameOfLife:
 			nextStep[key] = newCell
 		self.positions = nextStep
 
-	def clear(self):
+	def clear(self) -> None:
 		print (u"{}[2J{}[;H".format(chr(27), chr(27)), end="")
+
+	def saveCurrentPattern(self, pattern_name : str) -> None:
+		patternStr = ""
+		currRow = 0
+		for key in self.positions:
+			if key[0] > currRow:
+				patternStr += "\n"
+				currRow = key[0]
+			if self.positions[key].isAlive:
+				patternStr += "O"
+			else: patternStr += "X"
+				
+		f = open(pattern_name + ".gol", 'w')
+		f.write(patternStr)
+		f.close()
+		pass
+
+	def loadPatternFromFile(self, path : str) -> None:
+		x,y = 0, 0
+		for line in open(path):
+			y = 0
+			if x >= size: 
+				break 
+			for cell in line:
+				if cell.__eq__(" ") or cell.__eq__('\n'): continue
+				if y >= size: 
+					continue
+				newCell = Cell(x,y)
+				if cell.__eq__("O"): newCell.isAlive = True
+				elif cell.__eq__("X"): newCell.isAlive = False
+				self.positions[(x,y)] = newCell
+				y += 1
+			x += 1
 
 class Cell:
 	def __init__(self, x : int, y : int):
@@ -126,8 +163,8 @@ class Cell:
 		self.isAlive = isAlive
 	def toString(self):
 		if self.isAlive: 
-			return "[X]"
-		else: return "[ ]"
+			return "██"
+		else: return "  "
 
 def errPrint():
 	print(
@@ -163,6 +200,7 @@ Example: 'python3 {sys.argv[0]} -r -s 10'
 
 Pattern Options:
 	-r, --rand			populate the board with random cells
+	-l, --load [FILE]		load pattern from file
 	--bee				stable beehive pattern
 	--blinker			oscillating blinker
 	--pulsar			oscillating pulsar
@@ -192,5 +230,46 @@ Pattern Options:
 		elif param3.__eq__("--glider"):
 			game.setGliderPattern()
 		else: errPrint()
+	elif argCount == 5:
+		param1 = sys.argv[1]
+		param2 = sys.argv[2]
+		param3 = sys.argv[3]
+		param4 = sys.argv[4]
+		size = trySizeFromArgs(param1, param2)
+		game = GameOfLife(size)
+		if param3.__eq__("-l") or param3.__eq__("--load"):
+			patternFile = param4
+			print(f"loading '{patternFile}' from file")
+			game.loadPatternFromFile(patternFile)
+		else: errPrint()
 
-	game.play(0.25)
+	#game.clear()
+	game.draw()
+
+	while True:
+		cmd = input("\n[s] : step\n[p] : play\n[w] : save\n")
+
+		if cmd.__eq__("s"):
+			game.step()
+			game.clear()
+			game.draw()
+		elif cmd.__eq__("p"):
+			game.play(4)
+			while True:
+				replay = input("[r] : replay\n[q] : quit\n")
+				if replay.__eq__("r"):
+					game.randomizeCells()
+					break
+				elif replay.__eq__("q"):
+					exit()
+				else: print(f"Invalid input recieved '{replay}'")
+		elif cmd.__eq__("w"):
+			while True:
+				name = input("pattern name: ")
+				if name.__eq__(""): continue
+				else:
+					game.saveCurrentPattern(name)
+					break
+		else: print(f"Invalid input recieved '{cmd}'")
+
+	
