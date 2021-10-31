@@ -19,6 +19,10 @@ class GOLGui:
 						key="graph",
 						background_color='black',
 						enable_events=True
+					),
+					sg.Button(
+						key="pause_btn",
+						button_text="pause"
 					)
 				]
 			]
@@ -36,7 +40,7 @@ class GOLGui:
 			self.graph.delete_figure(cell)
 		
 		# Reset list of living cells
-		self.cells = []
+		self.cells.clear()
 
 		# Redraw all living cells
 		for col in range(self.size):
@@ -46,7 +50,7 @@ class GOLGui:
 				cellx, celly = self.getCell(col * cellWidth,row * cellHeight)
 				cell = self.game.positions[cellx,celly]
 				if cell.isAlive: 
-					poly = self.graph.DrawPolygon([(x,y),(x,y+cellHeight),(x+cellWidth,y+cellHeight),(x+cellWidth,y)], fill_color='white')
+					poly = self.graph.DrawPolygon([(x,y),(x,y+cellHeight),(x+cellWidth,y+cellHeight),(x+cellWidth,y)],fill_color='white')
 					self.cells.append(poly)
 	
 	def getCell(self, x, y) -> tuple :
@@ -57,20 +61,20 @@ class GOLGui:
 def run(gui, pause_event):
 	while True:
 		time.sleep(0.25)
-		gui.game.step()
 		global pause_updater
-		global stop_updater
 		if pause_updater:
 			pause_event.wait()
 			pause_event.clear()
+		gui.game.step()
+		global stop_updater
 		if stop_updater: break
 		gui.window.write_event_value("update", "val")
 
 if __name__ == "__main__":
 
 	gui = GOLGui(50)
-	gui.game.setPulsarPattern()
-	#gui.game.randomizeCells(0.2)
+	#gui.game.setPulsarPattern()
+	gui.game.randomizeCells(0.2)
 	#gui.game.setBlinkerPattern()
 	#gui.game.setGliderPattern()
 	gui.drawCells()
@@ -93,14 +97,18 @@ if __name__ == "__main__":
 		if event == "update":
 			gui.drawCells()
 			gui.window.refresh()
-		
-		mouse = values['graph']
-		if event == 'graph':
-			if mouse == (None, None):
-				continue
-			elif pause_updater == True:
+		elif event == 'pause_btn':
+			if pause_updater == True:
 				pause_updater = False
 				pause_event.set()
 			else: 
 				pause_event.clear()
 				pause_updater = True
+		elif event == 'graph' and pause_updater == True:
+			mouse = values['graph']
+			x = mouse[0]
+			y = mouse[1]
+			cellPos = gui.getCell(x,y)
+			gui.game.positions[cellPos].isAlive = not gui.game.positions[cellPos].isAlive
+			gui.drawCells()
+			gui.window.refresh()
