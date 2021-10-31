@@ -3,7 +3,6 @@ import math
 from game_of_life import GameOfLife
 import time
 import threading
-import ctypes
 
 class GOLGui:
 	def __init__(self, size : int):
@@ -55,16 +54,17 @@ class GOLGui:
 		celly = gui.size - 1 - math.floor(y / (self.canvasHeight / self.size))
 		return (cellx,celly)
 
-def run(gui):
+def run(gui, pause_event):
 	while True:
 		time.sleep(0.25)
 		gui.game.step()
+		global pause_updater
 		global stop_updater
+		if pause_updater:
+			pause_event.wait()
+			pause_event.clear()
 		if stop_updater: break
-		print("Sending update")
 		gui.window.write_event_value("update", "val")
-		print("update sent")
-	print("Done updater thread")
 
 if __name__ == "__main__":
 
@@ -76,17 +76,31 @@ if __name__ == "__main__":
 	gui.drawCells()
 
 	stop_updater = False 
-	updateThread = threading.Thread(target=run, args=(gui,))
+	pause_updater = False
+	pause_event = threading.Event()
+	updateThread = threading.Thread(target=run, args=(gui,pause_event))
 	updateThread.start()
 
 	while True:
 		event, values = gui.window.read()
 		if event is None:
+			pause_updater = False
+			stop_updater = True
+			pause_event.set()
+			updateThread.join()
 			break
+
 		if event == "update":
 			gui.drawCells()
 			gui.window.refresh()
-	
-	stop_updater = True
-	updateThread.join()
-	print("Done main thread")
+		
+		mouse = values['graph']
+		if event == 'graph':
+			if mouse == (None, None):
+				continue
+			elif pause_updater == True:
+				pause_updater = False
+				pause_event.set()
+			else: 
+				pause_event.clear()
+				pause_updater = True
