@@ -84,9 +84,9 @@ class GameOfLife:
 	def draw(self) -> None:
 		string = ""
 		string += " " + ("_" * self.size * 2) + "\n"
-		for x in range(self.size):
+		for y in range(self.size):
 			string += "|"
-			for y in range(self.size):
+			for x in range(self.size):
 				cell = self.positions[(x, y)]
 				string += cell.toString()
 			string += '|\n'
@@ -101,13 +101,13 @@ class GameOfLife:
 			livingNeighbors = 0
 
 			if key[1] > 0 and self.positions[(key[0], key[1] - 1)].isAlive: livingNeighbors += 1
-			if key[1] < size-1 and self.positions[(key[0], key[1] + 1)].isAlive: livingNeighbors += 1
+			if key[1] < self.size-1 and self.positions[(key[0], key[1] + 1)].isAlive: livingNeighbors += 1
 			if key[0] > 0 and self.positions[(key[0] - 1, key[1])].isAlive: livingNeighbors += 1
-			if key[0] < size-1 and self.positions[(key[0] + 1, key[1])].isAlive: livingNeighbors += 1
+			if key[0] < self.size-1 and self.positions[(key[0] + 1, key[1])].isAlive: livingNeighbors += 1
 			if key[0] > 0 and key[1] > 0 and self.positions[(key[0] - 1, key[1] - 1)].isAlive: livingNeighbors += 1
-			if key[0] < size-1 and key[1] < size-1 and self.positions[(key[0] + 1, key[1] + 1)].isAlive: livingNeighbors += 1
-			if key[0] > 0 and key[1] < size-1 and self.positions[(key[0] - 1, key[1] + 1)].isAlive: livingNeighbors += 1
-			if key[0] < size-1 and key[1] > 0 and self.positions[(key[0] + 1, key[1] - 1)].isAlive: livingNeighbors += 1
+			if key[0] < self.size-1 and key[1] < self.size-1 and self.positions[(key[0] + 1, key[1] + 1)].isAlive: livingNeighbors += 1
+			if key[0] > 0 and key[1] < self.size-1 and self.positions[(key[0] - 1, key[1] + 1)].isAlive: livingNeighbors += 1
+			if key[0] < self.size-1 and key[1] > 0 and self.positions[(key[0] + 1, key[1] - 1)].isAlive: livingNeighbors += 1
 
 			if cell.isAlive and (livingNeighbors == 2 or livingNeighbors == 3):
 				newCell.isAlive = True
@@ -243,7 +243,6 @@ Pattern Options:
 			game.loadPatternFromFile(patternFile)
 		else: errPrint()
 
-	#game.clear()
 	game.draw()
 
 	while True:
