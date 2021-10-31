@@ -1,3 +1,5 @@
+# Conway's Game of Life in Python3
+
 ```
 Usage: python3 .\game_of_life.py {-s|--size} <SIZE> [PATTERN]
 Play Conway's Game of Life.
