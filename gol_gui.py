@@ -23,6 +23,10 @@ class GOLGui:
 					sg.Button(
 						key="pause_btn",
 						button_text="pause"
+					),
+					sg.Button(
+						key="step_btn",
+						button_text="setp"
 					)
 				]
 			]
@@ -104,11 +108,16 @@ if __name__ == "__main__":
 			else: 
 				pause_event.clear()
 				pause_updater = True
-		elif event == 'graph' and pause_updater == True:
-			mouse = values['graph']
-			x = mouse[0]
-			y = mouse[1]
-			cellPos = gui.getCell(x,y)
-			gui.game.positions[cellPos].isAlive = not gui.game.positions[cellPos].isAlive
-			gui.drawCells()
-			gui.window.refresh()
+		elif pause_updater == True:
+			if  event == 'graph':
+				mouse = values['graph']
+				x = mouse[0]
+				y = mouse[1]
+				cellPos = gui.getCell(x,y)
+				gui.game.positions[cellPos].isAlive = not gui.game.positions[cellPos].isAlive
+				gui.drawCells()
+				gui.window.refresh()
+			elif event == 'step_btn':
+				gui.game.step()
+				gui.drawCells()
+				gui.window.refresh()
