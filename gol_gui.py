@@ -8,10 +8,32 @@ class GOLGui:
 	def __init__(self, size : int):
 		self.game = GameOfLife(size)
 		self.size = size
-		self.canvasWidth = 700
-		self.canvasHeight = 700
+		self.canvasWidth = 500
+		self.canvasHeight = 500
 		self.layout = [
 				[
+					[
+						[sg.Button(
+							key="pause_btn",
+							button_text="pause"
+						),
+						sg.Button(
+							key="step_btn",
+							button_text="setp",
+						),
+						sg.Button(
+							key="save_btn",
+							button_text="save"
+						),
+						sg.Button(
+							key="load_btn",
+							button_text="load"
+						)],
+						sg.Listbox(
+							values = ["aaa", "bbb", "ccc"],
+							size=(30,4)
+						)
+					],
 					sg.Graph(
 						canvas_size=(self.canvasWidth, self.canvasHeight),
 						graph_bottom_left=(0, 0),
@@ -19,17 +41,10 @@ class GOLGui:
 						key="graph",
 						background_color='black',
 						enable_events=True
-					),
-					sg.Button(
-						key="pause_btn",
-						button_text="pause"
-					),
-					sg.Button(
-						key="step_btn",
-						button_text="setp"
 					)
 				]
 			]
+
 		self.window = sg.Window("Game of Life", self.layout, background_color= 'black')
 		self.window.Finalize()
 		self.graph = self.window.Element("graph")
@@ -77,8 +92,8 @@ def run(gui, pause_event):
 if __name__ == "__main__":
 
 	gui = GOLGui(50)
-	#gui.game.setPulsarPattern()
-	gui.game.randomizeCells(0.2)
+	gui.game.setPulsarPattern()
+	#gui.game.randomizeCells(0.2)
 	#gui.game.setBlinkerPattern()
 	#gui.game.setGliderPattern()
 	gui.drawCells()
@@ -121,3 +136,7 @@ if __name__ == "__main__":
 				gui.game.step()
 				gui.drawCells()
 				gui.window.refresh()
+			elif event == 'load_btn':
+				pass
+			elif event == 'save_btn':
+				pass
